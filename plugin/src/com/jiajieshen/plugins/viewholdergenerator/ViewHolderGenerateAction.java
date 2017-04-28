@@ -1,50 +1,49 @@
-package com.jiajieshen.plugins.viewholdergenerator
+package com.jiajieshen.plugins.viewholdergenerator;
 
-import com.intellij.codeInsight.CodeInsightActionHandler
-import com.intellij.codeInsight.generation.actions.BaseGenerateAction
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.PlatformDataKeys
-import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiClass
-import com.intellij.psi.PsiFile
-import com.intellij.psi.util.PsiUtilBase
-import com.jiajieshen.plugins.viewholdergenerator.form.EntryList
-import com.jiajieshen.plugins.viewholdergenerator.iface.ICancelListener
-import com.jiajieshen.plugins.viewholdergenerator.iface.IConfirmListener
-import com.jiajieshen.plugins.viewholdergenerator.model.Element
-import com.jiajieshen.plugins.viewholdergenerator.common.Utils
-import groovy.transform.CompileStatic
-import org.jetbrains.annotations.NotNull
+import com.intellij.codeInsight.CodeInsightActionHandler;
+import com.intellij.codeInsight.generation.actions.BaseGenerateAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.PlatformDataKeys;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.util.PsiUtilBase;
+import com.jiajieshen.plugins.viewholdergenerator.common.Utils;
+import com.jiajieshen.plugins.viewholdergenerator.form.EntryList;
+import com.jiajieshen.plugins.viewholdergenerator.iface.ICancelListener;
+import com.jiajieshen.plugins.viewholdergenerator.iface.IConfirmListener;
+import com.jiajieshen.plugins.viewholdergenerator.model.Element;
+import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*
+import javax.swing.*;
+import java.util.ArrayList;
 
 /**
  * Created by xin on 4/28/17.
  */
-@CompileStatic
 public class ViewHolderGenerateAction extends BaseGenerateAction implements IConfirmListener, ICancelListener {
 
-    protected JFrame mDialog
-    protected static final Logger log = Logger.getInstance(ViewHolderGenerateAction.class)
+    protected JFrame mDialog;
+    protected static final Logger log = Logger.getInstance(ViewHolderGenerateAction.class);
 
     public ViewHolderGenerateAction() {
-        super(null)
+        super(null);
     }
 
     public ViewHolderGenerateAction(CodeInsightActionHandler handler) {
-        super(handler)
+        super(handler);
     }
 
     @Override
     protected boolean isValidForFile(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile file) {
-        return (super.isValidForFile(project, editor, file) && Utils.getLayoutFileFromCaret(editor, file) != null)
+        return (super.isValidForFile(project, editor, file) && Utils.getLayoutFileFromCaret(editor, file) != null);
     }
 
     @Override
     protected boolean isValidForClass(PsiClass targetClass) {
-        return super.isValidForClass(targetClass)
+        return super.isValidForClass(targetClass);
     }
 
     @Override
@@ -93,7 +92,7 @@ public class ViewHolderGenerateAction extends BaseGenerateAction implements ICon
     }
 
     @Override
-    void onCancel() {
+    public void onCancel() {
         closeDialog();
     }
 
@@ -106,7 +105,7 @@ public class ViewHolderGenerateAction extends BaseGenerateAction implements ICon
     }
 
     @Override
-    void onConfirm(Project project, Editor editor, ArrayList<Element> elements) {
+    public void onConfirm(Project project, Editor editor, ArrayList<Element> elements) {
         PsiFile file = PsiUtilBase.getPsiFileInEditor(editor, project);
         if (file == null) {
             return;
@@ -115,10 +114,12 @@ public class ViewHolderGenerateAction extends BaseGenerateAction implements ICon
 
         closeDialog();
 
-        int selectedCount = elements.count {
-            it.used
+        int selectedCount = 0;
+        for (Element element : elements) {
+            if (element.used) {
+                selectedCount++;
+            }
         }
-        .intValue();
 
         if (selectedCount > 0) {
             new ViewHolderWriter(file, getTargetClass(editor, file), "Generate Injections", elements, layout.getName()).execute();

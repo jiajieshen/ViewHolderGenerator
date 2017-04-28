@@ -1,19 +1,20 @@
-package com.jiajieshen.plugins.viewholdergenerator
+package com.jiajieshen.plugins.viewholdergenerator;
 
-import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.project.Project
-import com.intellij.psi.*
-import com.intellij.psi.codeStyle.CodeStyleManager
-import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.search.PsiShortNamesCache
-import com.jiajieshen.plugins.viewholdergenerator.common.Definitions
-import com.jiajieshen.plugins.viewholdergenerator.model.Element
-import groovy.transform.CompileStatic
+import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.project.Project;
+import com.intellij.psi.*;
+import com.intellij.psi.codeStyle.CodeStyleManager;
+import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.PsiShortNamesCache;
+import com.jiajieshen.plugins.viewholdergenerator.common.Definitions;
+import com.jiajieshen.plugins.viewholdergenerator.model.Element;
+
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Created by xin on 4/28/17.
  */
-@CompileStatic
 public class ViewHolderWriter extends WriteCommandAction.Simple {
 
     private static final String VIEW_HOLDER_CLASS_NAME = "ViewHolder";
@@ -24,7 +25,7 @@ public class ViewHolderWriter extends WriteCommandAction.Simple {
     protected PsiFile mFile;
     protected Project mProject;
     protected PsiClass mClass;
-    protected List<Element> mElements;
+    protected ArrayList<Element> mElements;
     protected PsiElementFactory mFactory;
     protected String mLayoutFileName;
 
@@ -38,11 +39,17 @@ public class ViewHolderWriter extends WriteCommandAction.Simple {
         mFile = file;
         mProject = clazz.getProject();
         mClass = clazz;
-        mElements = elements.findAll() {
-            it.used
-        };
         mFactory = JavaPsiFacade.getElementFactory(mProject);
         mLayoutFileName = layoutFileName;
+        Iterator<Element> elementIterator = elements.iterator();
+        Element element;
+        while (elementIterator.hasNext()) {
+            element = elementIterator.next();
+            if (!element.used) {
+                elementIterator.remove();
+            }
+        }
+        mElements = elements;
     }
 
     @Override
@@ -64,24 +71,26 @@ public class ViewHolderWriter extends WriteCommandAction.Simple {
 
         PsiClass viewHolder = mFactory.createClassFromText(holderBuilder.toString(), mClass);
         viewHolder.setName(VIEW_HOLDER_CLASS_NAME);
-        viewHolder.modifierList.setModifierProperty(PsiModifier.PRIVATE, true);
-        viewHolder.modifierList.setModifierProperty(PsiModifier.STATIC, true);
+        viewHolder.getModifierList().setModifierProperty(PsiModifier.PRIVATE, true);
+        viewHolder.getModifierList().setModifierProperty(PsiModifier.STATIC, true);
 
         // extends RecyclerView.ViewHolder
-        GlobalSearchScope searchScope = GlobalSearchScope.allScope(project);
-        PsiClass[] psiClasses = PsiShortNamesCache.getInstance(project)
+        GlobalSearchScope searchScope = GlobalSearchScope.allScope(mProject);
+        PsiClass[] psiClasses = PsiShortNamesCache.getInstance(mProject)
                 .getClassesByName(RECYCLER_VIEW_HOLDER_SIMPLE_NAME, searchScope);
-        PsiClass recyclerViewHolderClass = psiClasses.find {
-            it.qualifiedName == RECYCLER_VIEW_HOLDER_QUALIFIED_NAME;
+        PsiClass recyclerViewHolderClass = null;
+        for (PsiClass psiClass : psiClasses) {
+            if(RECYCLER_VIEW_HOLDER_QUALIFIED_NAME.equals(psiClass.getQualifiedName())){
+                recyclerViewHolderClass = psiClass;
+            }
         }
-        if (recyclerViewHolderClass) {
-            println recyclerViewHolderClass
+        if (recyclerViewHolderClass != null) {
             PsiJavaCodeReferenceElement ref = mFactory.createClassReferenceElement(recyclerViewHolderClass);
             viewHolder.getExtendsList().add(ref);
         }
 
         // add fields
-        mElements.each { element ->
+        for (Element element : mElements) {
             StringBuilder sb = new StringBuilder();
             if (element.nameFull != null && element.nameFull.length() > 0) { // custom package+class
                 sb.append(element.nameFull);
@@ -96,13 +105,13 @@ public class ViewHolderWriter extends WriteCommandAction.Simple {
             sb.append(";");
 
             PsiField psiField = mFactory.createFieldFromText(sb.toString(), viewHolder);
-            psiField.modifierList.setModifierProperty(PsiModifier.PRIVATE, true);
+            psiField.getModifierList().setModifierProperty(PsiModifier.PRIVATE, true);
             viewHolder.add(psiField);
         }
 
         // add findViewById
-        PsiMethod constructor = viewHolder.constructors[0];
-        mElements.each { element ->
+        PsiMethod constructor = viewHolder.getConstructors()[0];
+        for (Element element : mElements) {
             StringBuilder sb = new StringBuilder();
             sb.append(element.fieldName);
             sb.append("=(");
@@ -112,7 +121,7 @@ public class ViewHolderWriter extends WriteCommandAction.Simple {
             sb.append(");");
 
             PsiStatement statement = mFactory.createStatementFromText(sb.toString(), viewHolder);
-            constructor.body.add(statement);
+            constructor.getBody().add(statement);
         }
 
         mClass.add(viewHolder);
