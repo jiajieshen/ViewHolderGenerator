@@ -1,7 +1,7 @@
 package com.jiajieshen.plugins.viewholdergenerator.model;
 
 
-import com.jiajieshen.plugins.viewholdergenerator.util.Utils;
+import com.jiajieshen.plugins.viewholdergenerator.common.Utils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

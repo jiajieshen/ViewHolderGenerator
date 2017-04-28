@@ -1,4 +1,4 @@
-package com.jiajieshen.plugins.viewholdergenerator.util;
+package com.jiajieshen.plugins.viewholdergenerator.common;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;

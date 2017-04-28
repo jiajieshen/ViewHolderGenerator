@@ -14,7 +14,7 @@ import com.jiajieshen.plugins.viewholdergenerator.form.EntryList
 import com.jiajieshen.plugins.viewholdergenerator.iface.ICancelListener
 import com.jiajieshen.plugins.viewholdergenerator.iface.IConfirmListener
 import com.jiajieshen.plugins.viewholdergenerator.model.Element
-import com.jiajieshen.plugins.viewholdergenerator.util.Utils
+import com.jiajieshen.plugins.viewholdergenerator.common.Utils
 import groovy.transform.CompileStatic
 import org.jetbrains.annotations.NotNull
 
