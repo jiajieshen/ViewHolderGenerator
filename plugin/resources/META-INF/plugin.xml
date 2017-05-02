@@ -30,7 +30,7 @@
         <!-- Add your actions here -->
         <action id="ViewHolderGenerateAction"
                 class="com.jiajieshen.plugins.viewholdergenerator.ViewHolderGenerateAction"
-                text="ViewHolder Generate"
+                text="RecyclerView.ViewHolder"
                 description="Plugin for generating RecyclerView.ViewHolder from selected layout XMLs.">
             <add-to-group group-id="JavaGenerateGroup1" anchor="last"/>
         </action>
