@@ -6,7 +6,6 @@ import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.PsiShortNamesCache;
-import com.jiajieshen.plugins.viewholdergenerator.common.Definitions;
 import com.jiajieshen.plugins.viewholdergenerator.model.Element;
 
 import java.util.ArrayList;
@@ -80,7 +79,7 @@ public class ViewHolderWriter extends WriteCommandAction.Simple {
                 .getClassesByName(RECYCLER_VIEW_HOLDER_SIMPLE_NAME, searchScope);
         PsiClass recyclerViewHolderClass = null;
         for (PsiClass psiClass : psiClasses) {
-            if(RECYCLER_VIEW_HOLDER_QUALIFIED_NAME.equals(psiClass.getQualifiedName())){
+            if (RECYCLER_VIEW_HOLDER_QUALIFIED_NAME.equals(psiClass.getQualifiedName())) {
                 recyclerViewHolderClass = psiClass;
             }
         }
@@ -92,14 +91,7 @@ public class ViewHolderWriter extends WriteCommandAction.Simple {
         // add fields
         for (Element element : mElements) {
             StringBuilder sb = new StringBuilder();
-            if (element.nameFull != null && element.nameFull.length() > 0) { // custom package+class
-                sb.append(element.nameFull);
-            } else if (Definitions.paths.containsKey(element.name)) { // listed class
-                sb.append(Definitions.paths.get(element.name));
-            } else { // android.widget
-                sb.append("android.widget.");
-                sb.append(element.name);
-            }
+            sb.append(element.name);
             sb.append(" ");
             sb.append(element.fieldName);
             sb.append(";");
@@ -111,17 +103,19 @@ public class ViewHolderWriter extends WriteCommandAction.Simple {
 
         // add findViewById
         PsiMethod constructor = viewHolder.getConstructors()[0];
-        for (Element element : mElements) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(element.fieldName);
-            sb.append("=(");
-            sb.append(element.name);
-            sb.append(")itemView.findViewById(R.id.");
-            sb.append(element.id);
-            sb.append(");");
+        if (constructor != null) {
+            for (Element element : mElements) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(element.fieldName);
+                sb.append("=(");
+                sb.append(element.name);
+                sb.append(")itemView.findViewById(R.id.");
+                sb.append(element.id);
+                sb.append(");");
 
-            PsiStatement statement = mFactory.createStatementFromText(sb.toString(), viewHolder);
-            constructor.getBody().add(statement);
+                PsiStatement statement = mFactory.createStatementFromText(sb.toString(), viewHolder);
+                constructor.getBody().add(statement);
+            }
         }
 
         mClass.add(viewHolder);
