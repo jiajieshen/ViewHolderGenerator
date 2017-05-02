@@ -1,15 +1,15 @@
 <idea-plugin version="2">
     <id>com.jiajieshen.plugins.viewholdergenerator</id>
     <name>ViewHolderGenerator</name>
-    <version>1.0</version>
-    <vendor email="suausum@gmail.com" url="https://github.com/jiajieshen/ViewHolderGenerator">Empty</vendor>
+    <version>1.0.1</version>
+    <vendor email="suausum@gmail.com" url="https://github.com/jiajieshen/ViewHolderGenerator">sum</vendor>
 
     <description><![CDATA[
       Plugin for generating RecyclerView.ViewHolder from selected layout XMLs.
     ]]></description>
 
     <change-notes><![CDATA[
-      Release 1.0
+      Release 1.0.1
     ]]>
     </change-notes>
 
